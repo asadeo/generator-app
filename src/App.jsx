@@ -12,6 +12,9 @@ export default function App() {
   // NAVIGATION STATE
   const [activeTab, setActiveTab] = useState(1);
   const [currentModule, setCurrentModule] = useState('generator');
+
+  // Mobile Sidebar State
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   // GENERATOR STATE
   const [documentType, setDocumentType] = useState('sertifikat');
@@ -309,32 +312,48 @@ export default function App() {
   };
 
 return (
-    <div className="flex h-screen bg-slate-100 font-sans text-slate-800 overflow-hidden">
+    <div className="flex h-screen bg-slate-100 font-sans text-slate-800 overflow-hidden relative">
       
-      {/* SIDEBAR DENGAN BRANDING KHUSUS */}
-      <aside className="w-64 bg-indigo-900 text-white flex flex-col shadow-xl z-20 justify-between">
+      {/* MOBILE OVERLAY BACKGROUND */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/60 z-20 md:hidden backdrop-blur-sm transition-opacity"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* SIDEBAR RESPONSIVE */}
+      <aside className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 w-72 md:w-64 bg-indigo-900 text-white flex flex-col shadow-2xl md:shadow-xl z-30 transition-transform duration-300 ease-in-out justify-between`}>
         <div>
-          {/* Logo Instansi */}
-          <div className="p-6 border-b border-indigo-800 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center shadow-inner"><img src="/logo.png"/></div>
-            <div>
-              <h1 className="font-bold text-lg leading-tight tracking-wide">APP Generator</h1>
-              <p className="text-xs text-indigo-300">Disdikbud Kab. Pati</p>
+          <div className="p-6 border-b border-indigo-800 flex items-center justify-between md:justify-start gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center shadow-inner bg-white overflow-hidden shrink-0">
+                 <img src="/logo.png" alt="Logo" className="w-full h-full object-cover"/>
+              </div>
+              <div>
+                <h1 className="font-bold text-lg leading-tight tracking-wide">APP Generator</h1>
+                <p className="text-xs text-indigo-300">Disdikbud Kab. Pati</p>
+              </div>
             </div>
+            {/* Tombol Tutup Sidebar Khusus Mobile */}
+            <button 
+              className="md:hidden text-indigo-300 hover:text-white p-2 text-xl"
+              onClick={() => setIsSidebarOpen(false)}
+            >
+              ✕
+            </button>
           </div>
           
-          {/* Menu Navigasi Modul */}
           <nav className="p-4 space-y-2">
-            <button onClick={() => setCurrentModule('generator')} className={`w-full text-left px-4 py-3 rounded-lg font-semibold flex items-center gap-3 transition-colors ${currentModule === 'generator' ? 'bg-indigo-800 shadow-sm border border-indigo-700' : 'hover:bg-indigo-800/50 text-indigo-200'}`}>
+            <button onClick={() => { setCurrentModule('generator'); setIsSidebarOpen(false); }} className={`w-full text-left px-4 py-3 rounded-lg font-semibold flex items-center gap-3 transition-colors ${currentModule === 'generator' ? 'bg-indigo-800 shadow-sm border border-indigo-700' : 'hover:bg-indigo-800/50 text-indigo-200'}`}>
               <span>📄</span> Generator Dokumen
             </button>
-            <button onClick={() => setCurrentModule('pdf_utility')} className={`w-full text-left px-4 py-3 rounded-lg font-semibold flex items-center gap-3 transition-colors ${currentModule === 'pdf_utility' ? 'bg-indigo-800 shadow-sm border border-indigo-700' : 'hover:bg-indigo-800/50 text-indigo-200'}`}>
+            <button onClick={() => { setCurrentModule('pdf_utility'); setIsSidebarOpen(false); }} className={`w-full text-left px-4 py-3 rounded-lg font-semibold flex items-center gap-3 transition-colors ${currentModule === 'pdf_utility' ? 'bg-indigo-800 shadow-sm border border-indigo-700' : 'hover:bg-indigo-800/50 text-indigo-200'}`}>
               <span>🗂️</span> Utilitas PDF
             </button>
           </nav>
         </div>
 
-        {/* PENYEMATAN IDENTITAS TUGAS / AKADEMIK DI BAWAH SIDEBAR */}
         <div className="p-4 m-4 rounded-xl bg-indigo-950/60 border border-indigo-800 text-center">
           <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Dikembangkan Oleh</p>
           <p className="text-xs font-semibold text-indigo-100">Mahasiswa Teknik Informatika UNNES</p>
@@ -347,6 +366,13 @@ return (
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         {/* TOP NAVBAR BANNER */}
         <header className="bg-white px-8 py-4 flex justify-between items-center shadow-sm z-10">
+          {/* Tombol Hamburger Mobile */}
+          <button 
+            className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg text-xl"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            ☰
+          </button>
           <div>
             <h2 className="text-xl font-bold text-slate-700">Portal App Generator</h2>
             <p className="text-xs text-slate-400 font-medium">Sistem Pemrosesan Dokumen & Ekstraksi AI Terintegrasi</p>
@@ -361,7 +387,7 @@ return (
               ========================================================= */}
           {currentModule === 'pdf_utility' && (
              <div className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-slate-100 animate-fade-in">
-               <div className="flex items-center gap-4 mb-6">
+               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
                  <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-2xl">🔗</div>
                  <div>
                    <h3 className="text-xl font-bold">Penggabung File PDF (Merger)</h3>
@@ -372,7 +398,7 @@ return (
                <div className="p-6 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 text-center mb-6">
                  <span className="text-4xl mb-3 block">📄</span>
                  <p className="text-sm font-semibold text-slate-700 mb-2">Pilih beberapa berkas PDF yang ingin disatukan</p>
-                 <input type="file" multiple accept=".pdf" onChange={handlePdfUpload} className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"/>
+                 <input type="file" multiple accept=".pdf" onChange={handlePdfUpload} className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer w-full"/>
                </div>
 
                {pdfFiles.length > 0 && (
@@ -381,7 +407,7 @@ return (
                    <ul className="space-y-2">
                      {Array.from(pdfFiles).map((file, i) => (
                        <li key={i} className="text-sm bg-white p-3 rounded-lg border border-slate-200 flex items-center gap-3 shadow-sm">
-                         <span className="font-bold text-slate-400">{i+1}.</span> <span className="font-medium text-slate-700">{file.name}</span>
+                         <span className="font-bold text-slate-400">{i+1}.</span> <span className="font-medium text-slate-700 truncate">{file.name}</span>
                        </li>
                      ))}
                    </ul>
