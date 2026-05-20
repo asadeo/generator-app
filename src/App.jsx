@@ -9,10 +9,11 @@ import QRCode from 'qrcode';
 import { PDFDocument } from 'pdf-lib';
 
 export default function App() {
-  const [isStarted, setIsStarted] = useState(false);
+  // NAVIGATION STATE
   const [activeTab, setActiveTab] = useState(1);
   const [currentModule, setCurrentModule] = useState('generator');
-
+  
+  // GENERATOR STATE
   const [documentType, setDocumentType] = useState('sertifikat');
   const [template, setTemplate] = useState(null);
   const [participants, setParticipants] = useState([]);
@@ -23,12 +24,14 @@ export default function App() {
   const [enableQR, setEnableQR] = useState(true);
   const imageRef = useRef(null);
 
+  // AI OCR STATE
   const [ocrImage, setOcrImage] = useState(null);
   const [rawText, setRawText] = useState("");
   const [isExtracting, setIsExtracting] = useState(false);
   const [isCleaning, setIsCleaning] = useState(false);
   const [manualInput, setManualInput] = useState("");
-
+  
+  // PDF UTILITY STATE
   const [pdfFiles, setPdfFiles] = useState([]);
   const [isMerging, setIsMerging] = useState(false);
 
@@ -113,6 +116,7 @@ export default function App() {
       const reader = new FileReader();
       reader.onload = (event) => processCSVData(event.target.result);
       reader.readAsText(file);
+      e.target.value = null;
     }
   };
 
@@ -130,6 +134,7 @@ export default function App() {
       setRawText("Gagal memindai teks. Pastikan gambar jelas.");
     }
     setIsExtracting(false);
+    e.target.value = null;
   };
 
   const handleAICleansing = async () => {
@@ -177,6 +182,15 @@ export default function App() {
     // Tambahkan data ke antrean
     setParticipants([...participants, { nama: manualInput.trim() }]);
     setManualInput(""); 
+  };
+
+  const handleResetData = () => {
+    if(window.confirm("Apakah Anda yakin ingin menghapus seluruh antrean data?")) {
+      setParticipants([]);
+      setHeaders([]);
+      setFieldConfigs({});
+      setActiveField(null);
+    }
   };
 
   const handleImageClick = (e) => {
@@ -294,65 +308,56 @@ export default function App() {
     setIsProcessing(false);
   };
 
-  if (!isStarted) {
-    return (
-      <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-200 font-sans text-slate-800 flex flex-col">
-        <header className="px-8 py-6 flex justify-between items-center bg-white/70 backdrop-blur-md shadow-sm fixed w-full top-0 z-50">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-800 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-inner">W</div>
+return (
+    <div className="flex h-screen bg-slate-100 font-sans text-slate-800 overflow-hidden">
+      
+      {/* SIDEBAR DENGAN BRANDING KHUSUS */}
+      <aside className="w-64 bg-indigo-900 text-white flex flex-col shadow-xl z-20 justify-between">
+        <div>
+          {/* Logo Instansi */}
+          <div className="p-6 border-b border-indigo-800 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center shadow-inner"><img src="/logo.png"/></div>
             <div>
-              <h1 className="font-bold text-lg text-slate-800 leading-none tracking-wide">APP Generator</h1>
-              <p className="text-xs text-slate-500 font-medium">Disdikbud Kab. Pati</p>
+              <h1 className="font-bold text-lg leading-tight tracking-wide">APP Generator</h1>
+              <p className="text-xs text-indigo-300">Disdikbud Kab. Pati</p>
             </div>
           </div>
-        </header>
-
-        <main className="flex-1 flex flex-col items-center justify-center text-center px-4 mt-24">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-100/80 text-indigo-700 text-xs font-bold mb-8 shadow-sm border border-indigo-200">
-            <span className="animate-pulse">✨</span> Didukung Gemini AI & Tesseract OCR
-          </div>
-          <h1 className="text-5xl md:text-6xl font-extrabold text-slate-900 mb-6 max-w-4xl leading-tight tracking-tight">
-            Aplikasi <br/> <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-blue-500">Generator</span> Administrasi
-          </h1>
-          <p className="text-lg text-slate-600 mb-10 max-w-2xl leading-relaxed">
-            Platform modern untuk efisiensi birokrasi. Cetak ribuan e-sertifikat dan ID Card dalam hitungan detik. Tanpa perlu mengetik ulang data dari SK, cukup unggah foto dan biarkan AI yang bekerja secara offline dan aman.
-          </p>
-          <button onClick={() => setIsStarted(true)} className="px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 hover:-translate-y-1 transition-all shadow-xl hover:shadow-indigo-500/30">
-            Mulai Coba
-          </button>
-        </main>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex h-screen bg-slate-100 font-sans text-slate-800 overflow-hidden">
-    {/* SIDEBAR */}
-      <aside className="w-64 bg-indigo-900 text-white flex flex-col shadow-xl z-20">
-        <div className="p-6 border-b border-indigo-800 flex items-center gap-4">
-          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center font-bold text-indigo-900 text-xl shadow-inner">W</div>
-          <div><h1 className="font-bold text-lg leading-tight tracking-wide">APP Generator</h1><p className="text-xs text-indigo-300">Disdikbud Kab. Pati</p></div>
+          
+          {/* Menu Navigasi Modul */}
+          <nav className="p-4 space-y-2">
+            <button onClick={() => setCurrentModule('generator')} className={`w-full text-left px-4 py-3 rounded-lg font-semibold flex items-center gap-3 transition-colors ${currentModule === 'generator' ? 'bg-indigo-800 shadow-sm border border-indigo-700' : 'hover:bg-indigo-800/50 text-indigo-200'}`}>
+              <span>📄</span> Generator Dokumen
+            </button>
+            <button onClick={() => setCurrentModule('pdf_utility')} className={`w-full text-left px-4 py-3 rounded-lg font-semibold flex items-center gap-3 transition-colors ${currentModule === 'pdf_utility' ? 'bg-indigo-800 shadow-sm border border-indigo-700' : 'hover:bg-indigo-800/50 text-indigo-200'}`}>
+              <span>🗂️</span> Utilitas PDF
+            </button>
+          </nav>
         </div>
-        <nav className="flex-1 p-4 space-y-2">
-          <button onClick={() => setCurrentModule('generator')} className={`w-full text-left px-4 py-3 rounded-lg font-semibold flex items-center gap-3 transition-colors ${currentModule === 'generator' ? 'bg-indigo-800 shadow-sm border border-indigo-700' : 'hover:bg-indigo-800/50 text-indigo-200'}`}>
-            <span>📄</span> Generator Dokumen
-          </button>
-          <button onClick={() => setCurrentModule('pdf_utility')} className={`w-full text-left px-4 py-3 rounded-lg font-semibold flex items-center gap-3 transition-colors ${currentModule === 'pdf_utility' ? 'bg-indigo-800 shadow-sm border border-indigo-700' : 'hover:bg-indigo-800/50 text-indigo-200'}`}>
-            <span>🗂️</span> Utilitas PDF
-          </button>
-        </nav>
+
+        {/* PENYEMATAN IDENTITAS TUGAS / AKADEMIK DI BAWAH SIDEBAR */}
+        <div className="p-4 m-4 rounded-xl bg-indigo-950/60 border border-indigo-800 text-center">
+          <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Dikembangkan Oleh</p>
+          <p className="text-xs font-semibold text-indigo-100">Mahasiswa Teknik Informatika UNNES</p>
+          <div className="h-px bg-indigo-800 my-2"></div>
+          <p className="text-[10px] text-indigo-300"></p>
+        </div>
       </aside>
 
-    {/* MAIN CONTENT AREA */}
+      {/* CORE CANVAS WORKSPACE */}
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
+        {/* TOP NAVBAR BANNER */}
         <header className="bg-white px-8 py-4 flex justify-between items-center shadow-sm z-10">
-          <h2 className="text-xl font-bold text-slate-700">{currentModule === 'generator' ? 'Modul Generator Dokumen' : 'Modul Utilitas & Alat PDF'}</h2>
+          <div>
+            <h2 className="text-xl font-bold text-slate-700">Portal App Generator</h2>
+            <p className="text-xs text-slate-400 font-medium">Sistem Pemrosesan Dokumen & Ekstraksi AI Terintegrasi</p>
+          </div>
         </header>
 
+        {/* DYNAMIC AREA CONTENT */}
         <div className="flex-1 overflow-auto p-8">
           
           {/* =========================================================
-              VIEW: MODUL UTILITAS PDF
+              VIEW MODUL: UTILITAS PDF
               ========================================================= */}
           {currentModule === 'pdf_utility' && (
              <div className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-slate-100 animate-fade-in">
@@ -360,83 +365,86 @@ export default function App() {
                  <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-2xl">🔗</div>
                  <div>
                    <h3 className="text-xl font-bold">Penggabung File PDF (Merger)</h3>
-                   <p className="text-sm text-slate-500">Gabungkan beberapa file hasil scan menjadi 1 dokumen dengan aman.</p>
+                   <p className="text-sm text-slate-500">Gabungkan lembar arsip hasil scan (SK/Ijazah/Surat) menjadi satu berkas secara lokal.</p>
                  </div>
                </div>
                
                <div className="p-6 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 text-center mb-6">
                  <span className="text-4xl mb-3 block">📄</span>
-                 <p className="text-sm font-semibold text-slate-700 mb-2">Pilih file PDF yang ingin digabung</p>
+                 <p className="text-sm font-semibold text-slate-700 mb-2">Pilih beberapa berkas PDF yang ingin disatukan</p>
                  <input type="file" multiple accept=".pdf" onChange={handlePdfUpload} className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"/>
                </div>
 
                {pdfFiles.length > 0 && (
                  <div className="mb-6">
-                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Urutan Dokumen ({pdfFiles.length} file):</p>
+                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Urutan Gabungan Berkas ({pdfFiles.length}):</p>
                    <ul className="space-y-2">
                      {Array.from(pdfFiles).map((file, i) => (
                        <li key={i} className="text-sm bg-white p-3 rounded-lg border border-slate-200 flex items-center gap-3 shadow-sm">
-                         <span className="font-bold text-slate-400">{i+1}.</span> <span>{file.name}</span>
+                         <span className="font-bold text-slate-400">{i+1}.</span> <span className="font-medium text-slate-700">{file.name}</span>
                        </li>
                      ))}
                    </ul>
                  </div>
                )}
 
-               <button onClick={mergePdfs} disabled={isMerging || pdfFiles.length < 2} className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all ${isMerging || pdfFiles.length < 2 ? 'bg-slate-300 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600 hover:-translate-y-1'}`}>
-                 {isMerging ? '🔄 Sedang Menggabungkan Data...' : 'Gabungkan PDF Sekarang'}
+               <button onClick={mergePdfs} disabled={isMerging || pdfFiles.length < 2} className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all ${isMerging || pdfFiles.length < 2 ? 'bg-slate-300 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600'}`}>
+                 {isMerging ? '🔄 Menyatukan Lembar Halaman Berkas...' : 'Gabungkan PDF Sekarang'}
                </button>
              </div>
           )}
 
           {/* =========================================================
-              VIEW: MODUL GENERATOR DOKUMEN (Fitur Lama + QR)
+              VIEW MODUL: GENERATOR DOKUMEN 
               ========================================================= */}
           {currentModule === 'generator' && (
             <>
-              <div className="flex gap-6 mb-8 border-b border-slate-200 pb-2">
-                <button onClick={() => setActiveTab(1)} className={`pb-2 text-sm font-semibold transition-colors ${activeTab === 1 ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-slate-500'}`}>1: Setup Template</button>
-                <button onClick={() => setActiveTab(2)} className={`pb-2 text-sm font-semibold transition-colors ${activeTab === 2 ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-slate-500'}`}>2: Input Data & AI</button>
-                <button onClick={() => setActiveTab(3)} className={`pb-2 text-sm font-semibold transition-colors ${activeTab === 3 ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-slate-500'}`}>3: Preview & Cetak</button>
+              {/* Alur Langkah Kerja */}
+              <div className="flex gap-6 mb-6 border-b border-slate-200 pb-2">
+                <button onClick={() => setActiveTab(1)} className={`pb-2 text-sm font-semibold transition-colors ${activeTab === 1 ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}>Langkah 1: Setup Template Latar</button>
+                <button onClick={() => setActiveTab(2)} className={`pb-2 text-sm font-semibold transition-colors ${activeTab === 2 ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}>Langkah 2: Input Sumber Data & AI</button>
+                <button onClick={() => setActiveTab(3)} className={`pb-2 text-sm font-semibold transition-colors ${activeTab === 3 ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}>Langkah 3: Tata Letak & Cetak Berkas</button>
               </div>
 
-              <div className="max-w-4xl bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+              <div className="max-w-5xl bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
                 {activeTab === 1 && (
                   <div className="animate-fade-in">
-                    <h3 className="text-lg font-bold mb-4">Pengaturan Dokumen</h3>
+                    <h3 className="text-lg font-bold mb-4">Pengaturan Format Dokumen</h3>
                     <div className="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                      <label className="block text-sm font-semibold text-slate-700 mb-3">Pilih Jenis Dokumen Cetak:</label>
+                      <label className="block text-sm font-semibold text-slate-700 mb-3">Tipe Keluaran Administrasi:</label>
                       <div className="flex flex-col md:flex-row gap-4">
-                        <button onClick={() => setDocumentType('sertifikat')} className={`flex-1 py-3 rounded-lg text-sm font-semibold border-2 transition-all ${documentType === 'sertifikat' ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'}`}>🎓 Sertifikat (A4 Lanskap)</button>
-                        <button onClick={() => setDocumentType('id_card')} className={`flex-1 py-3 rounded-lg text-sm font-semibold border-2 transition-all ${documentType === 'id_card' ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'}`}>🪪 ID Card (B4 Potret)</button>
-                        <button onClick={() => setDocumentType('surat')} className={`flex-1 py-3 rounded-lg text-sm font-semibold border-2 transition-all ${documentType === 'surat' ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'}`}>📄 Surat Massal (A4 Potret)</button>
+                        <button onClick={() => setDocumentType('sertifikat')} className={`flex-1 py-3 rounded-lg text-sm font-semibold border-2 transition-all ${documentType === 'sertifikat' ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'}`}>🎓 Sertifikat Penghargaan (A4 Lanskap)</button>
+                        <button onClick={() => setDocumentType('id_card')} className={`flex-1 py-3 rounded-lg text-sm font-semibold border-2 transition-all ${documentType === 'id_card' ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'}`}>🪪 Tanda Pengenal / ID Card (B4 Potret)</button>
+                        <button onClick={() => setDocumentType('surat')} className={`flex-1 py-3 rounded-lg text-sm font-semibold border-2 transition-all ${documentType === 'surat' ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'}`}>📄 Surat Edaran Massal (A4 Potret)</button>
                       </div>
                     </div>
                     <div className="mb-4">
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">Unggah Gambar Latar / Scan Template</label>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Unggah Desain Latar Kosong (Format Gambar)</label>
                       <input type="file" accept="image/*" onChange={handleImageUpload} className="w-full p-3 border border-slate-300 rounded-lg bg-slate-50 cursor-pointer" />
                     </div>
-                    <button onClick={() => setActiveTab(2)} className="mt-4 px-6 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700">Lanjut ke Input Data ➡️</button>
+                    <button onClick={() => setActiveTab(2)} className="mt-4 px-6 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700">Lanjut Langkah Berikutnya ➡️</button>
                   </div>
                 )}
 
                 {activeTab === 2 && (
                   <div className="animate-fade-in">
-                    <h3 className="text-lg font-bold mb-4">Sumber Data Peserta</h3>
+                    <h3 className="text-lg font-bold mb-4">Pilih Jalur Pemasukan Data</h3>
+                    
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* OPSI A: CSV */}
+                      {/* OPSI A */}
                       <div className="p-5 border border-slate-200 rounded-xl bg-white shadow-sm flex flex-col">
                         <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-3">📁</div>
-                        <h4 className="font-bold mb-2">Opsi A: Unggah CSV</h4>
-                        <p className="text-xs text-slate-500 mb-4 flex-1">Gunakan file CSV/Excel jika peserta berjumlah ratusan.</p>
+                        <h4 className="font-bold mb-2">Opsi A: Import Excel/CSV</h4>
+                        <p className="text-xs text-slate-500 mb-4 flex-1">Gunakan berkas spreadsheet jika kuantitas data mencapai puluhan atau ratusan.</p>
                         <input type="file" accept=".csv" onChange={handleCSVUpload} className="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-50" />
                       </div>
-                      {/* OPSI B: AI OCR */}
+                      
+                      {/* OPSI B */}
                       <div className="p-5 border-2 border-indigo-100 rounded-xl bg-indigo-50 shadow-sm relative flex flex-col">
-                        <div className="absolute top-0 right-0 bg-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">✨ AI OCR</div>
+                        <div className="absolute top-0 right-0 bg-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">✨ Smart AI</div>
                         <div className="w-10 h-10 bg-indigo-200 text-indigo-700 rounded-full flex items-center justify-center mb-3">🤖</div>
-                        <h4 className="font-bold mb-2 text-indigo-900">Opsi B: Foto SK</h4>
-                        <p className="text-xs text-indigo-700 mb-4 flex-1">Upload foto fisik SK untuk diekstrak otomatis oleh AI.</p>
+                        <h4 className="font-bold mb-2 text-indigo-900">Opsi B: Ekstraksi Gambar SK</h4>
+                        <p className="text-xs text-indigo-700 mb-4 flex-1">Pindai lembar foto fisik SK Tugas, AI akan membaca teks dan merapikan gelar otomatis.</p>
                         <input type="file" accept="image/*" onChange={handleOCRImageUpload} className="w-full p-2 border border-indigo-200 rounded-lg text-xs bg-white mb-2" />
                         {ocrImage && <img src={ocrImage} className="w-full h-16 object-cover border border-indigo-200 rounded-lg mb-2 shadow-sm" />}
                         {rawText && (
@@ -448,65 +456,113 @@ export default function App() {
                           </div>
                         )}
                       </div>
-                      {/* OPSI C: MANUAL INPUT (BARU) */}
+
+                      {/* OPSI C */}
                       <div className="p-5 border border-amber-200 rounded-xl bg-amber-50 shadow-sm flex flex-col">
                         <div className="w-10 h-10 bg-amber-200 text-amber-700 rounded-full flex items-center justify-center mb-3">✍️</div>
-                        <h4 className="font-bold mb-2 text-amber-900">Opsi C: Ketik Manual</h4>
-                        <p className="text-xs text-amber-700 mb-4 flex-1">Cocok untuk mencetak dokumen susulan (1-5 orang).</p>
+                        <h4 className="font-bold mb-2 text-amber-900">Opsi C: Entri Manual</h4>
+                        <p className="text-xs text-amber-700 mb-4 flex-1">Ketik nama secara manual untuk menangani kasus peserta susulan atau ralat cetak berkas.</p>
                         <div className="flex gap-2 mb-2 mt-auto">
                           <input 
                             type="text" 
-                            placeholder="Ketik Nama Lengkap..." 
+                            placeholder="Ketik Nama & Gelar..." 
                             value={manualInput}
                             onChange={(e) => setManualInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleAddManualParticipant()}
-                            className="w-full p-2 border border-amber-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500 focus:outline-none" 
+                            className="w-full p-2 border border-amber-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500 outline-none" 
                           />
-                          <button onClick={handleAddManualParticipant} className="px-3 py-2 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600 shadow-sm">
-                            +
-                          </button>
+                          <button onClick={handleAddManualParticipant} className="px-3 py-2 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600 shadow-sm">+</button>
                         </div>
                       </div>
                     </div>
-                    {participants.length > 0 && <button onClick={() => setActiveTab(3)} className="mt-6 px-6 py-2 bg-emerald-600 text-white rounded-lg font-semibold">Lanjut ke Preview ➡️</button>}
+
+                    {/* Panel Tabel Pratinjau & Tombol Reset Data */}
+                    {participants.length > 0 && (
+                      <div className="mt-6 animate-fade-in border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                         {/* Header Status & Tombol Aksi */}
+                         <div className="flex flex-col sm:flex-row items-center justify-between bg-slate-50 p-4 border-b border-slate-200 gap-4">
+                           <div className="flex items-center gap-3 w-full sm:w-auto">
+                             <div className="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-sm">✓</div>
+                             <div>
+                               <p className="text-sm font-bold text-slate-800">Antrean Siap: {participants.length} Dokumen</p>
+                               <p className="text-xs text-slate-500">Pratinjau data yang siap dicetak</p>
+                             </div>
+                           </div>
+                           <div className="flex gap-2 w-full sm:w-auto">
+                             <button onClick={handleResetData} className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-lg text-sm font-semibold transition-colors flex-1 sm:flex-none">
+                               Kosongkan Data
+                             </button>
+                             <button onClick={() => setActiveTab(3)} className="px-6 py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg text-sm font-bold shadow-md transition-all flex-1 sm:flex-none">
+                               Lanjut Desain ➡️
+                             </button>
+                           </div>
+                         </div>
+                         
+                         {/* Tabel Pratinjau Scrollable */}
+                         <div className="bg-white max-h-60 overflow-y-auto">
+                           <table className="w-full text-left text-sm text-slate-600">
+                             <thead className="bg-slate-100 text-slate-500 text-xs uppercase sticky top-0 shadow-sm">
+                               <tr>
+                                 <th className="px-6 py-3 font-bold w-16">No</th>
+                                 {headers.map((h, idx) => (
+                                   <th key={idx} className="px-6 py-3 font-bold">{h}</th>
+                                 ))}
+                               </tr>
+                             </thead>
+                             <tbody className="divide-y divide-slate-100">
+                               {participants.map((p, i) => (
+                                 <tr key={i} className="hover:bg-slate-50 transition-colors">
+                                   <td className="px-6 py-3 font-medium text-slate-400">{i + 1}</td>
+                                   {headers.map((h, idx) => (
+                                     <td key={idx} className="px-6 py-3">{p[h] || '-'}</td>
+                                   ))}
+                                 </tr>
+                               ))}
+                             </tbody>
+                           </table>
+                         </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
                 {activeTab === 3 && (
                   <div className="animate-fade-in flex flex-col md:flex-row gap-8">
+                    {/* Panel Kiri */}
                     <div className="w-full md:w-1/3 flex flex-col gap-4">
-                      <h3 className="text-lg font-bold mb-2">Penyesuaian Visual</h3>
+                      <h3 className="text-lg font-bold mb-2">Penyesuaian Komponen</h3>
                       
-                      {/* Togle Fitur Keamanan QR Code */}
+                      {/* Keamanan QR */}
                       <div className="bg-indigo-50 p-3 rounded-lg border border-indigo-100 flex items-center justify-between">
                          <div className="flex items-center gap-2">
                            <span className="text-indigo-600 font-bold">🛡️</span>
                            <div>
-                             <p className="text-xs font-bold text-indigo-900">Validasi QR Code</p>
-                             <p className="text-[10px] text-indigo-700">Tempel QR di pojok bawah</p>
+                             <p className="text-xs font-bold text-indigo-900">Validasi QR Code Resmi</p>
+                             <p className="text-[10px] text-indigo-700">Sematkan kode pengaman otomatis</p>
                            </div>
                          </div>
                          <label className="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" checked={enableQR} onChange={() => setEnableQR(!enableQR)} className="sr-only peer" />
-                            <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                            <div className="w-9 h-5 bg-slate-300 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
                          </label>
                       </div>
 
                       {headers.length > 0 && (
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                          <p className="text-xs font-bold text-slate-400 mb-2">Daftar Variabel Penempatan:</p>
                           <div className="flex flex-wrap gap-2 mb-4">
                             {headers.map(h => (
-                              <button key={h} onClick={() => setActiveField(h)} className={`px-3 py-1.5 rounded-md text-xs font-bold border ${activeField === h ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600'}`}>{h.toUpperCase()}</button>
+                              <button key={h} onClick={() => setActiveField(h)} className={`px-3 py-1.5 rounded-md text-xs font-bold border transition-colors ${activeField === h ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 hover:bg-slate-100'}`}>{h.toUpperCase()}</button>
                             ))}
                           </div>
                           {activeField && fieldConfigs[activeField] && (
                              <div className="space-y-4">
                                 <div>
-                                  <label className="text-xs font-semibold text-slate-600 block mb-1">Ukuran Font</label>
+                                  <label className="text-xs font-semibold text-slate-600 block mb-1">Skala Ketebalan Font</label>
                                   <input type="range" min="10" max="80" value={fieldConfigs[activeField].size} onChange={(e) => updateConfig(activeField, 'size', e.target.value)} className="w-full accent-indigo-600"/>
                                 </div>
                                 <div>
-                                  <label className="text-xs font-semibold text-slate-600 block mb-1">Warna Teks</label>
+                                  <label className="text-xs font-semibold text-slate-600 block mb-1">Palet Warna Teks</label>
                                   <input type="color" value={fieldConfigs[activeField].color} onChange={(e) => updateConfig(activeField, 'color', e.target.value)} className="w-full h-8 rounded border p-0 cursor-pointer"/>
                                 </div>
                              </div>
@@ -515,14 +571,15 @@ export default function App() {
                       )}
                       
                       <button onClick={generateCertificates} disabled={isProcessing || !template || participants.length === 0} className={`w-full py-3 mt-auto rounded-xl font-bold text-white shadow-lg transition-all ${isProcessing || !template || participants.length === 0 ? 'bg-slate-400' : 'bg-emerald-500 hover:bg-emerald-600'}`}>
-                        {isProcessing ? 'Memproses ZIP...' : `Cetak ${participants.length} Berkas`}
+                        {isProcessing ? 'Mengompres File ZIP...' : `Eksekusi Cetak Massal`}
                       </button>
                     </div>
 
+                    {/* Panel Kanan Preview */}
                     <div className="w-full md:w-2/3">
-                      <p className="text-sm font-semibold text-slate-500 mb-2">Preview (Klik gambar untuk atur teks)</p>
+                      <p className="text-sm font-semibold text-slate-500 mb-2">Kanvas Tata Letak (Klik gambar untuk menggeser posisi teks)</p>
                       {!template ? (
-                         <div className="w-full h-64 border-2 border-dashed border-slate-300 rounded-2xl flex items-center justify-center text-slate-400 bg-slate-50">Belum ada template</div>
+                         <div className="w-full h-64 border-2 border-dashed border-slate-300 rounded-2xl flex items-center justify-center text-slate-400 bg-slate-50">Silakan unggah berkas gambar latar pada Langkah 1</div>
                       ) : (
                         <div className={`relative w-full cursor-crosshair border shadow-md rounded-lg overflow-hidden bg-white mx-auto ${documentType === 'id_card' ? 'max-w-xs' : (documentType === 'surat' ? 'max-w-md' : 'max-w-full')}`} onClick={handleImageClick}>
                           <img ref={imageRef} src={template} alt="Preview" className="w-full h-auto object-contain pointer-events-none" />
