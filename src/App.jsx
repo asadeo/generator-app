@@ -365,7 +365,7 @@ return (
       {/* CORE CANVAS WORKSPACE */}
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         {/* TOP NAVBAR BANNER */}
-        <header className="bg-white px-8 py-4 flex justify-between items-center shadow-sm z-10">
+        <header className="bg-white px-4 md:px-8 py-4 flex items-center gap-4 shadow-sm z-10">
           {/* Tombol Hamburger Mobile */}
           <button 
             className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg text-xl"
