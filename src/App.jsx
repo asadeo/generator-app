@@ -1008,7 +1008,7 @@ function BuiltinPreview({ tmpl, docConfig }) {
                       {['csv', 'manual_multi', 'ocr'].map(mode => (
                         <button key={mode} onClick={() => setBulkInputMode(mode)}
                           className={`px-4 py-2 rounded-lg text-xs font-semibold transition-colors ${bulkInputMode === mode ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}>
-                          {mode === 'csv' ? '📁 Import CSV/Excel' : mode === 'manual_multi' ? '✍️ Input Manual' : '🤖 Scan Gambar SK'}
+                          {mode === 'csv' ? '📁 Import CSV/Excel' : mode === 'manual_multi' ? '✍️ Input Manual' : '🤖 Scan Gambar'}
                         </button>
                       ))}
                     </div>
