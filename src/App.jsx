@@ -491,18 +491,18 @@ Rules:
   const handleAICleansing = async () => {
     if (!rawText) return;
     setIsCleaning(true);
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      alert("API Key Gemini tidak ditemukan di file .env");
+      setIsCleaning(false);
+      return;
+    }
+    const prompt = `Ekstrak nama dari teks OCR ini. Rapikan kapital & gelar. Kembalikan HANYA format tabel CSV dengan 1 kolom header "nama".\n\nTeks:\n${rawText}`;
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          messages: [{
-            role: 'user',
-            content: `Ekstrak nama peserta dari teks OCR ini. Rapikan penulisan kapital & gelar akademik/jabatan. Kembalikan HANYA format CSV dengan header sesuai field yang tersedia: ${headers.join(',')}\n\nTeks:\n${rawText}`
-          }]
-        })
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
       });
       const data = await response.json();
       let csv = data.content?.map(c => c.text || '').join('') || '';
