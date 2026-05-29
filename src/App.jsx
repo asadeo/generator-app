@@ -66,7 +66,7 @@ export default function App() {
       const mergedPdfFile = await mergedPdf.save();
       const blob = new Blob([mergedPdfFile], { type: 'application/pdf' });
       saveAs(blob, `Gabungan_Dokumen_SITU_${Date.now()}.pdf`);
-      setPdfFiles([]); // Reset setelah berhasil
+      setPdfFiles([]); 
     } catch (error) {
       console.error(error);
       alert("Gagal menggabungkan PDF. Pastikan file tidak terkunci sandi.");
@@ -289,7 +289,7 @@ export default function App() {
         head: [tableColumn],
         body: tableRows,
         theme: 'grid',
-        headStyles: { fillColor: [49, 46, 129] }, // Warna Indigo tua khas birokrasi
+        headStyles: { fillColor: [49, 46, 129] }, 
         styles: { font: 'helvetica', fontSize: 10 }
       });
 
@@ -441,7 +441,7 @@ return (
                       <div className="flex flex-col md:flex-row gap-4">
                         <button onClick={() => setDocumentType('sertifikat')} className={`flex-1 py-3 rounded-lg text-sm font-semibold border-2 transition-all ${documentType === 'sertifikat' ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'}`}>🎓 Sertifikat Penghargaan (A4 Lanskap)</button>
                         <button onClick={() => setDocumentType('id_card')} className={`flex-1 py-3 rounded-lg text-sm font-semibold border-2 transition-all ${documentType === 'id_card' ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'}`}>🪪 Tanda Pengenal / ID Card (B4 Potret)</button>
-                        <button onClick={() => setDocumentType('surat')} className={`flex-1 py-3 rounded-lg text-sm font-semibold border-2 transition-all ${documentType === 'surat' ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'}`}>📄 Surat Edaran Massal (A4 Potret)</button>
+                        {/* <button onClick={() => setDocumentType('surat')} className={`flex-1 py-3 rounded-lg text-sm font-semibold border-2 transition-all ${documentType === 'surat' ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'}`}>📄 Surat Edaran Massal (A4 Potret)</button> */}
                       </div>
                     </div>
                     <div className="mb-4">
