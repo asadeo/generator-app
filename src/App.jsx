@@ -462,7 +462,7 @@ return (
                         <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-3">📁</div>
                         <h4 className="font-bold mb-2">Opsi A: Import Excel/CSV</h4>
                         <p className="text-xs text-slate-500 mb-4 flex-1">Gunakan berkas spreadsheet jika kuantitas data mencapai puluhan atau ratusan.</p>
-                        <input type="file" accept=".csv" onChange={handleCSVUpload} className="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-50" />
+                        <input type="file" accept=".csv, .xlsx, .xls" onChange={handleCSVUpload} className="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-50" />
                       </div>
                       
                       {/* OPSI B */}
